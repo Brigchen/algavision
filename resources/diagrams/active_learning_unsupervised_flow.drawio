@@ -1,0 +1,183 @@
+<mxfile host="Electron" agent="Cursor">
+  <diagram id="ALGAVISION-active-learning" name="ALGAVISION主动学习与自动标注流程">
+    <mxGraphModel dx="2020" dy="1213" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lane_data" parent="1" style="swimlane;html=1;startSize=30;rounded=1;whiteSpace=wrap;fillColor=#E8F0FE;strokeColor=#3B82F6;fontStyle=1;fontSize=14;" value="数据来源与域适应" vertex="1">
+          <mxGeometry height="960" width="420" x="40" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_unsup" parent="1" style="swimlane;html=1;startSize=30;rounded=1;whiteSpace=wrap;fillColor=#ECFDF5;strokeColor=#10B981;fontStyle=1;fontSize=14;" value="无监督 / 弱监督自动标注" vertex="1">
+          <mxGeometry height="960" width="450" x="500" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_train" parent="1" style="swimlane;html=1;startSize=30;rounded=1;whiteSpace=wrap;fillColor=#FFF7ED;strokeColor=#F97316;fontStyle=1;fontSize=14;" value="模型训练与自学习" vertex="1">
+          <mxGeometry height="960" width="430" x="990" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_output" parent="1" style="swimlane;html=1;startSize=30;rounded=1;whiteSpace=wrap;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontStyle=1;fontSize=14;" value="应用输出" vertex="1">
+          <mxGeometry height="960" width="300" x="1460" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="standard_photos" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;" value="少量有标签标准照&#xa;分类网站 / 图鉴 / 书籍显微照片&#xa;特点：清晰、标准、域偏窄" vertex="1">
+          <mxGeometry height="90" width="320" x="90" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="target_images" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;" value="大量无标签目标域图像&#xa;FlowCAM / 自动显微镜 / 不同样品来源&#xa;特点：质量不一、背景复杂、域偏移明显" vertex="1">
+          <mxGeometry height="100" width="320" x="90" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="style_pool" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontSize=13;" value="目标域风格池&#xa;从 FlowCAM / 显微镜图像采样&#xa;用于风格迁移增强" vertex="1">
+          <mxGeometry height="80" width="320" x="90" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="style_aug" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#93C5FD;strokeColor=#1D4ED8;fontSize=13;" value="风格迁移 / 域适应增强&#xa;FDA 傅里叶低频迁移&#xa;HistMatch 直方图匹配&#xa;AdaIN 统计对齐&#xa;+ 显微专用增强：360°旋转、模糊、噪声、对比度" vertex="1">
+          <mxGeometry height="140" width="320" x="90" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="seed_dataset" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;" value="弱监督种子训练集&#xa;标准照 + 风格化标准照&#xa;类别目录结构：class_name/*.jpg" vertex="1">
+          <mxGeometry height="90" width="320" x="90" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="preprocess" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;fontSize=13;" value="图像预处理与实例切割&#xa;imagecut / microscope_cut_viewer&#xa;可扩展：SAM / MobileSAM 自动分割" vertex="1">
+          <mxGeometry height="90" width="330" x="560" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="embedding" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A7F3D0;strokeColor=#059669;fontSize=13;" value="自监督嵌入提取&#xa;DINOv2-S / DINOv2-B&#xa;或其他 registry 模型 num_classes=0" vertex="1">
+          <mxGeometry height="90" width="330" x="560" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="weak_features" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;fontSize=13;" value="弱监督辅助特征&#xa;形态测量 morphometer.py&#xa;长度 / 宽度 / 面积 / 生物体积&#xa;可用于过滤碎屑、辅助聚类与 OOD 判断" vertex="1">
+          <mxGeometry height="110" width="330" x="560" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="cluster" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A7F3D0;strokeColor=#059669;fontSize=13;" value="无监督聚类&#xa;L2 Normalize → PCA / 可选 UMAP&#xa;HDBSCAN：自动簇数，-1 为噪声 / 杂质&#xa;KMeans：可选固定簇数" vertex="1">
+          <mxGeometry height="110" width="330" x="560" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="cluster_review" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6EE7B7;strokeColor=#047857;fontSize=13;" value="簇审核与弱监督命名&#xa;cluster_review_gui.py&#xa;每簇显示代表图 → 人工一次性命名 / 合并 / 标记杂质" vertex="1">
+          <mxGeometry height="100" width="330" x="560" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="labeled_export" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;fontSize=13;" value="自动标注导出&#xa;unsup_labeled/class_name/*.jpg&#xa;噪声簇跳过或进入 unclustered" vertex="1">
+          <mxGeometry height="90" width="330" x="560" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="merge_train" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#EA580C;fontSize=13;" value="训练数据汇总&#xa;confirmed：人工确认样本&#xa;pseudo：伪标签样本&#xa;seed：标准照与风格化标准照" vertex="1">
+          <mxGeometry height="100" width="330" x="1040" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="train_model" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#EA580C;fontSize=13;" value="SOTA 分类模型训练 / 微调&#xa;models_registry.py&#xa;EfficientNetV2 / ConvNeXtV2 / ViT / Swin / MaxViT / DINOv2&#xa;AMP + 梯度裁剪 + 早停" vertex="1">
+          <mxGeometry height="120" width="330" x="1040" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="batch_predict" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#EA580C;fontSize=13;" value="批量预测无标签池&#xa;对 FlowCAM / 显微镜新样本推理&#xa;输出概率、预测类别、不确定度" vertex="1">
+          <mxGeometry height="90" width="330" x="1040" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="self_learner" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#EA580C;fontSize=13;" value="SelfLearner 自学习路由&#xa;采样策略：entropy / margin / least_confidence / BALD / coreset&#xa;OOD 检测：Energy / Mahalanobis" vertex="1">
+          <mxGeometry height="110" width="330" x="1040" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="decision_high" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontSize=13;" value="高置信且非 OOD？" vertex="1">
+          <mxGeometry height="90" width="250" x="1080" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="pseudo_archive" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#EA580C;fontSize=13;" value="伪标注归档&#xa;archive/_pseudo/class_name&#xa;训练时可降低权重" vertex="1">
+          <mxGeometry height="90" width="190" x="1010" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="review_queue" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#EA580C;fontSize=13;" value="人工审核队列&#xa;review_queue + JSON 概率记录&#xa;优先显示不确定 / OOD / 代表性样本" vertex="1">
+          <mxGeometry height="90" width="190" x="1230" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="human_review" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#EA580C;fontSize=13;" value="人工确认 / 修正 / 新建类&#xa;确认后进入 confirmed 数据集&#xa;新类可返回无监督聚类复查" vertex="1">
+          <mxGeometry height="90" width="330" x="1040" y="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="model_output" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=13;" value="识别模型 checkpoint&#xa;classes_names.txt / setting.log&#xa;可供 sorta.py 调用" vertex="1">
+          <mxGeometry height="100" width="220" x="1500" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="analysis_output" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDD6FE;strokeColor=#7C3AED;fontSize=13;" value="图像分析输出&#xa;识别 / 测量 / 计数 / Excel 报告&#xa;sorta.py + morphometer.py" vertex="1">
+          <mxGeometry height="110" width="220" x="1500" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="active_metrics" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontSize=13;" value="迭代监控指标&#xa;标注节省率 / macro-F1 / OOD召回&#xa;伪标签比例 / 类别长尾分布" vertex="1">
+          <mxGeometry height="110" width="220" x="1500" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="standard_photos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#2563EB;strokeWidth=2;" target="style_aug">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="target_images" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#2563EB;strokeWidth=2;" target="style_pool">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="style_pool" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#2563EB;strokeWidth=2;" target="style_aug">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="style_aug" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#2563EB;strokeWidth=2;" target="seed_dataset">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="target_images" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#059669;strokeWidth=2;fontSize=12;" target="preprocess" value="目标域图像池">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="preprocess" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#059669;strokeWidth=2;" target="embedding">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="embedding" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#059669;strokeWidth=2;" target="cluster">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="weak_features" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#059669;strokeWidth=2;fontSize=12;" target="cluster" value="形态先验/弱监督约束">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="cluster" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#059669;strokeWidth=2;" target="cluster_review">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="cluster_review" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#059669;strokeWidth=2;" target="labeled_export">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="seed_dataset" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;fontSize=12;" target="merge_train" value="seed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="labeled_export" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;fontSize=12;" target="merge_train" value="cluster-labeled">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="merge_train" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;" target="train_model">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="train_model" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;" target="batch_predict">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="batch_predict" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;" target="self_learner">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="self_learner" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;" target="decision_high">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="decision_high" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;fontSize=12;" target="pseudo_archive" value="是">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="decision_high" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;fontSize=12;" target="review_queue" value="否 / 不确定 / OOD">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="review_queue" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;" target="human_review">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="pseudo_archive" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;fontSize=12;" target="merge_train" value="confirmed / pseudo 进入下一轮">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1110" y="880" />
+              <mxPoint x="990" y="880" />
+              <mxPoint x="990" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e21" edge="1" parent="1" source="human_review" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#EA580C;strokeWidth=2;fontSize=12;" target="merge_train" value="confirmed">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1205" y="1160" />
+              <mxPoint x="960" y="1160" />
+              <mxPoint x="960" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e22" edge="1" parent="1" source="human_review" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#059669;strokeWidth=2;fontSize=12;" target="cluster_review" value="疑似新类">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="920" y="1105" />
+              <mxPoint x="920" y="800" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e23" edge="1" parent="1" source="train_model" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#7C3AED;strokeWidth=2;" target="model_output">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e24" edge="1" parent="1" source="model_output" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#7C3AED;strokeWidth=2;" target="analysis_output">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e25" edge="1" parent="1" source="self_learner" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#7C3AED;strokeWidth=2;" target="active_metrics">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note1" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FEF3C7;strokeColor=#D97706;fontSize=13;" value="关键思想：&#xa;1. 标准照解决类别先验，风格迁移解决域偏移。&#xa;2. DINOv2 嵌入 + HDBSCAN 解决冷启动聚类。&#xa;3. 主动学习只把最有价值样本送人工审核。&#xa;4. OOD / 噪声 / 新类单独处理，避免污染伪标签。" vertex="1">
+          <mxGeometry height="180" width="250" x="1490" y="800" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

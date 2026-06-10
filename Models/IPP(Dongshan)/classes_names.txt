@@ -1,0 +1,87 @@
+0,10_Mysidacea
+1,11_Ostracoda
+2,12_1Diastylis sp
+3,12_2Leueon sp
+4,13_Chaetognatha
+5,14_1Oikopleura A
+6,14_2Oikopleura B
+7,15_hydroid
+8,16_1Hydromedusae
+9,16_2Other Medusa
+10,17_Pteropoda
+11,18_Fish larva
+12,19_Fish eggs
+13,1_1Polychaeta_egg
+14,1_2Polychaeta Larva
+15,1_3Polychaeta A
+16,1_4Polychaeta B
+17,1_5Polychaeta C
+18,1_6Polychaeta D
+19,1_7Polychaeta E
+20,1_8Polychaeta F
+21,20_Noctiluca
+22,21-1Sea anemone larva
+23,21-2Bryozoon larva
+24,21-3Trochophore larva
+25,22_1Oikopleura residues
+26,22_2Barnacles residues
+27,22_3Crustacean residues B
+28,22_4Crustacean residues A
+29,22_5Isopoda residues
+30,23_1unknown
+31,23_2unknown
+32,2_1Penelia avirostris
+33,2_2Pseudevadne tergestina
+34,3_1_10OtherCopepoda A
+35,3_1_11OtherCopepodaB
+36,3_1_12Centropagidae
+37,3_1_13Acrocalanus gibber
+38,3_1_14Metridinidae
+39,3_1_1Acartiidae A
+40,3_1_2Acartiidae B
+41,3_1_3Acartiidae C
+42,3_1_4Metridinidae
+43,3_1_5Pontellidae
+44,3_1_6Tortanidae
+45,3_1_7Copepoda_egg
+46,3_1_8Copepoda Larva
+47,3_1_9Paracalanus parvus
+48,3_2_1Oithonidae
+49,3_2_2Cyclopoida_egg
+50,3_2_3Cyclopoida double
+51,3_3Harpacticoida
+52,3_4_1Monstrilloida A
+53,3_4_2Monstrilloida B
+54,3_4_3Monstrilloida C
+55,3_5Caligoida
+56,4_1Suborder Caperellidea
+57,4_2 Suborder Hyperiidea A
+58,4_3 Suborder Hyperiidea B
+59,4_4Suborder Gammaridea A
+60,4_5Suborder Gammaridea B
+61,4_6Suborder Gammaridea C
+62,4_7Other Amphipoda
+63,5_Isopoda
+64,6_Decapoda
+65,7_1Macrura larva A
+66,7_2Macrura larva B
+67,7_3Macrura larva C
+68,7_4Macrura larva D
+69,7_5Macrura larva E
+70,7_6Macrura larva F
+71,7_7Macrura larva G
+72,8_1Megalopa larva _Phase1-A
+73,8_2Megalopa larva _Phase1-B
+74,8_3Megalopa larva _Phase1-C
+75,8_4Megalopa larva _Phase1-D
+76,8_5Megalopa larva _Phase2
+77,9_Porcellana zoea larva
+78,Abiotic-Detrius
+79,cylindrical
+80,ellipsoidal
+81,Hollow
+82,Irregular_shape
+83,linear
+84,ovoid
+85,round
+86,tabular

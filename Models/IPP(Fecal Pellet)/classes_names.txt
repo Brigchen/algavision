@@ -1,0 +1,84 @@
+0,Abiotic-Detrius
+1,Amph_ Others
+2,Amph_ Suborder Caperellidea
+3,Amph_ Suborder Hyperiidea_A
+4,Amph_ Suborder Hyperiidea_B
+5,Amph_Suborder Gammaridea_A
+6,Amph_Suborder Gammaridea_B
+7,Amph_Suborder Gammaridea_C
+8,App_Oikopleura
+9,Chaetognatha
+10,Cla_ Penelia avirostris
+11,Cla_ Pseudevadne tergestina
+12,Copepoda_egg
+13,Cope_ Acartiidae_A
+14,Cope_ Acartiidae_B
+15,Cope_ Acartiidae_C
+16,Cope_ Acrocalanus gibber
+17,Cope_ Cyclopoida double
+18,Cope_ Cyclopoida egg _A
+19,Cope_ Cyclopoida egg _B
+20,Cope_ Monstrilloida _B
+21,Cope_ Monstrilloida_A
+22,Cope_ Paracalanus parvus
+23,Cope_ Tortanidae
+24,Cope_Harpacticoida
+25,Cope_Labidocera
+26,Cope_Nauplius Larvae
+27,Cope_Others
+28,Cope_Pleuromamma
+29,Cope_Pontellopsis regalis
+30,Cumacea_ Diastylis sp
+31,Cumacea_ Leueon sp
+32,cylindrical
+33,Decapoda
+34,ellipsoidal
+35,Fish eggs
+36,Fish larvae
+37,Hollow
+38,Hydroid
+39,Hydromedusae
+40,Irregular_shape
+41,Isopoda_A
+42,Isopoda_B
+43,linear
+44,Macrura larvae_A
+45,Macrura larvae_B
+46,Macrura larvae_C
+47,Macrura larvae_D
+48,Macrura larvae_E
+49,Macrura larvae_F
+50,Megalopa larvae _A
+51,Megalopa larvae _B
+52,Megalopa larvae _C
+53,Megalopa larvae _D
+54,Megalopa larvae _E
+55,Mysidacea
+56,Noctiluca
+57,Ostracoda
+58,Other Hydromedusae
+59,others
+60,ovoid
+61,Plan_Echinopluteus
+62,Plan_Pilidium
+63,Plan_Sea anemone larva
+64,Plan_Trochophore larvae
+65,Polychaeta_A
+66,Polychaeta_B
+67,Polychaeta_C
+68,Polychaeta_D
+69,Polychaeta_E
+70,Polychaeta_egg
+71,Polychaeta_F
+72,Polychaeta_Larvae
+73,Porcellana zoea larvae
+74,Pteropoda
+75,Residues_Barnacles
+76,Residues_Crustacean_A
+77,Residues_Crustacean_B
+78,Residues_Isopoda
+79,Residues_Oikopleura
+80,round
+81,tabular
+82,Unknown_A
+83,Unknown_B

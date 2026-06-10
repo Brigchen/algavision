@@ -1,0 +1,54 @@
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environments ───────────────────────────────────────
+.venv/
+venv/
+env/
+.conda/
+
+# ── PyTorch model weights (large binaries) ────────────────────
+Models/**/*.pt
+Models/**/*.pth
+Models/**/*.bin
+# Keep model metadata:
+!Models/**/classes_names*.txt
+!Models/**/setting.log
+
+# ── Runtime data directories ──────────────────────────────────
+runs/
+class/
+phytoplankton_data/
+test/
+
+# ── IDE / editor ──────────────────────────────────────────────
+.vscode/
+.spyproject/
+.idea/
+*.code-workspace
+*.swp
+*~
+
+# ── Windows / macOS ───────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ── Misc generated / temp ─────────────────────────────────────
+*.log
+*.pkl
+*.bkp
+*.bak
+*.tmp
+export/
+configs/
+*.xls
+*.xlsx
+sorta.cfg

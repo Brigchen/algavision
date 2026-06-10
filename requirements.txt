@@ -1,0 +1,38 @@
+# ALGAVISION — 浮游生物图像处理与分析系统
+# 依赖清单 (pip install -r requirements.txt)
+#
+# PyTorch 安装说明：
+#   Windows (CUDA 11.8): pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+#   Windows (CPU only):  pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#   请先按上述命令安装 PyTorch，再执行 pip install -r requirements.txt
+
+# === GUI 框架 ===
+PyQt5>=5.15
+
+# === 图像处理 ===
+opencv-python>=4.5
+Pillow>=9.0
+imageio>=2.25
+
+# === 数值计算 & 数据处理 ===
+numpy>=1.21
+pandas>=1.3
+
+# === 深度学习 (PyTorch 生态) ===
+# torch / torchvision 请按顶部说明手动安装，以下为辅助库
+timm>=0.9
+efficientnet-pytorch>=0.7
+
+# === 可视化 ===
+matplotlib>=3.5
+
+# === 工具 ===
+tqdm>=4.60
+styleframe>=4
+
+# === 机器学习（无监督标注/自学习）===
+# scikit-learn 1.3+ 内置 HDBSCAN，无需单独安装 hdbscan 包
+scikit-learn>=1.3
+
+# 可选：UMAP 降维（安装后聚类效果更好，不安装自动回退 PCA）
+# umap-learn>=0.5
