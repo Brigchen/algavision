@@ -18,6 +18,16 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from child import Ui_Viewer, Ui_Makedataset
 import os
+from pathlib import Path
+
+# 资源路径：相对于本脚本文件解析，与工作目录无关
+_SRC_DIR = Path(__file__).parent
+_RES_DIR = _SRC_DIR.parent / 'resources' / 'icons'
+
+def _icon(name):
+    """返回 resources/icons/ 下图标的绝对路径字符串，不存在时返回空字符串。"""
+    p = _RES_DIR / name
+    return str(p) if p.exists() else ''
 import time
 import argparse
 import torch
@@ -1104,7 +1114,9 @@ class Ui_sorta(QMainWindow):
         self.label = QLabel(self.frame_top)
         self.label.setMaximumSize(QSize(280, 100))
         # self.label.setText("brigchen@xmu.edu.cn")
-        self.label.setPixmap(QPixmap("sorta_3_long.png"))
+        _logo = _icon('Sorta_logo2.png')
+        if _logo:
+            self.label.setPixmap(QPixmap(_logo))
         self.label.setScaledContents(True)
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setObjectName("label")
@@ -1556,15 +1568,15 @@ class Ui_sorta(QMainWindow):
         self.hlayout_plot = QHBoxLayout(self.label_plot)
         self.verticalLayout_plot.addWidget(self.label_plot)
         
-        img = Image.open("ALGAVISION-01.png")
         self.figure = Figure_Bar(8, 6, dpi=100)
-        # self.figure.setGeometry(QtCore.QRect(0, 0, 800, 600))
-        # self.plot1 = FigureCanvasQTAgg(self.figure)
-        # self.ax = self.figure.add_subplot(111)
-        # plt.subplots_adjust(top=.99, bottom=0.25, right=.99, left=.075)
-        plt.imshow(img)
-        plt.axis('off')
-        # plt.show()
+        _bg = _icon('Sorta_logo2.png')
+        try:
+            _img_path = _bg if _bg else str(_RES_DIR / 'Modelr_logo2.png')
+            img = Image.open(_img_path)
+            plt.imshow(img)
+            plt.axis('off')
+        except Exception:
+            pass
         self.hlayout_plot.addWidget(self.figure)
         
 
@@ -2315,6 +2327,8 @@ if __name__ =='__main__':
     # QApplication.setAttribute(Qt.AA_EnableHighDpiScaling) 
     app = QApplication(sys.argv) 
     gui = Ui_sorta()
-    gui.setWindowIcon(QIcon('./sorta3.png'))
+    _ico = _icon('Sorta_icon.png')
+    if _ico:
+        gui.setWindowIcon(QIcon(_ico))
     gui.showMaximized()
     sys.exit(app.exec_())  
