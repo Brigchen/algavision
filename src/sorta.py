@@ -1,4 +1,5 @@
 '''
+update: 20261016 export per-particle morphology excel alongside class summary
 update: 20260111 support for efficientnetv2
 update: 20260107 flowcam cut error
 update: 20250909 fix path error, and excel name error
@@ -343,6 +344,7 @@ class idenCNN(QThread):
         self.mm_yesno = kwargs.get('mm')
         self.mms = kwargs.get('mms')
         self.mm_select = kwargs.get('mm_select')
+        self.export_particles = bool(kwargs.get('export_particles', False))
         self.pxsize = kwargs.get('pxsize')
         self.device_type = kwargs.get('device_type')
         self.level = kwargs.get('level')
@@ -351,6 +353,50 @@ class idenCNN(QThread):
         #       "export yesno:%s"%self.export_yesno, "export path%s"%self.export_path, 
         #       "batch size:%d"%self.batch_size)
         # self.signal.connect(self.refresh)
+        self._particle_sheets = {}
+        self._particle_sheet_names = set()
+
+    def _safe_sheet(self, name):
+        bad = '[]:*?/\\'
+        base = ''.join(c for c in str(name) if c not in bad).strip()[:31] or 'Sheet'
+        sheet = base
+        i = 1
+        while sheet in self._particle_sheet_names:
+            suffix = '_%d' % i
+            sheet = base[:31 - len(suffix)] + suffix
+            i += 1
+        self._particle_sheet_names.add(sheet)
+        return sheet
+
+    def _queue_particle_sheet(self, sheet, df_meas, src_all, roi_all, classes):
+        """Keep one row per particle. Class-mean table is written separately."""
+        if not self.export_particles or df_meas is None or len(df_meas) == 0:
+            return
+        df_part = df_meas.copy()
+        n = len(df_part)
+        srcs = list(src_all) if len(src_all) == n else [''] * n
+        rois = list(roi_all) if len(roi_all) == n else list(range(n))
+        names = []
+        for pred in df_part['Prediction'].tolist():
+            try:
+                idx = int(pred)
+                names.append(classes[idx] if 0 <= idx < len(classes) else '')
+            except Exception:
+                names.append('')
+        df_part.insert(0, 'ROI', rois)
+        df_part.insert(0, 'Source', srcs)
+        df_part.insert(0, 'Class_Names', names)
+        self._particle_sheets[self._safe_sheet(sheet)] = df_part
+
+    def _write_particle_excel(self, path_part):
+        if not self.export_particles or not self._particle_sheets:
+            return None
+        with StyleFrame.ExcelWriter(path_part) as writer:
+            for name, df in self._particle_sheets.items():
+                sf = StyleFrame(df)
+                sf.set_column_width(columns=df.columns.tolist(), width=22)
+                sf.to_excel(excel_writer=writer, sheet_name=name)
+        return path_part
     
     def run(self):
         today = datetime.datetime.now().strftime('%Y%m%d_%H%M')
@@ -463,6 +509,7 @@ class idenCNN(QThread):
             os.makedirs(args.path_out)
         # dfs= pd.DataFrame()
         path_xls=os.path.join(args.path_out,f'CNN_Classes_Counts_{os.path.basename(args.path_imgs)}_{today}.xlsx')
+        path_part=os.path.join(args.path_out,f'CNN_Particles_Morphology_{os.path.basename(args.path_imgs)}_{today}.xlsx')
         print(f'Excel path: {path_xls}')
         check_imgs(args.path_imgs)
         num_total = 0
@@ -514,6 +561,8 @@ class idenCNN(QThread):
                         preds_all = []
                         if self.mm_yesno:
                             meas_all = []
+                            src_all = []
+                            roi_all = []
                         vol = 0
                         self.progress_signal.emit([len(os.listdir(data_path))-1, None, None, num_processed])
                         if self.device_type == 2 or self.image_type == 1:
@@ -533,6 +582,8 @@ class idenCNN(QThread):
                                     # model_cnn.eval()
                                     preds = []
                                     meas = []
+                                    srcs = []
+                                    rois = []
                                     for j, imgdata in enumerate(test_loader,0):
                                         imgs_tensor, labels = imgdata
                                         # plot(imgs[0])
@@ -569,6 +620,8 @@ class idenCNN(QThread):
                                                     # print(mea)
                                                     meas.append(mea)
                                                     # print('%d:%d'%(i,pred_name))
+                                                srcs.append(os.path.basename(fls[k]))
+                                                rois.append(k)
                                             # self._signal.emit([preds, meas, None])
                                             # print('473:', len(meas))
                                         except Exception as e:
@@ -580,6 +633,8 @@ class idenCNN(QThread):
     #                                     # print(len(preds_all))
                                 if self.mm_yesno:
                                     meas_all += meas
+                                    src_all += srcs
+                                    roi_all += rois
                                     
                                 # print('484 ', len(meas))
                                 self.data_signal.emit([preds_all, imgdir])
@@ -634,6 +689,8 @@ class idenCNN(QThread):
                                                 # model_cnn.eval()
                                                 preds = []
                                                 meas = []
+                                                srcs = []
+                                                rois = []
                                                 for _, imgdata in enumerate(test_loader,0):
                                                     imgs_tensor, labels = imgdata
                                                     # plot(imgs[0])
@@ -666,6 +723,8 @@ class idenCNN(QThread):
                                                                 # print(mea)
                                                                 meas.append(mea)
                                                                 # print('%d:%d'%(i,pred_name))
+                                                            srcs.append(fl)
+                                                            rois.append(k)
                                                         # self._signal.emit([preds, meas, None])
                                                         # print(len(preds),len(meas))
                                                     except Exception as e:
@@ -675,6 +734,8 @@ class idenCNN(QThread):
                                             preds_all += preds
                                             if self.mm_yesno:
                                                 meas_all += meas
+                                                src_all += srcs
+                                                roi_all += rois
                                             self.data_signal.emit([preds_all, imgdir])
                                             # print("mark5")
                                         except Exception as e:
@@ -690,6 +751,7 @@ class idenCNN(QThread):
                             # print('599: ', preds_all)
                             # print(args.features)
                             df_meas['Prediction'] = preds_all
+                            self._queue_particle_sheet(imgdir, df_meas, src_all, roi_all, classes)
                             df = pd.DataFrame(columns = mm_nms+['Prediction'])
                             # print('594 ', args.features, type(args.features))
                             # print('595 ', len(df_meas), type(df_meas))
@@ -745,7 +807,11 @@ class idenCNN(QThread):
                 # time.sleep(1)
                 self.progress_signal.emit([None,len(os.listdir(self.imgs_path))-1,None, num_processed])
                 print('Finished!')
-                self.message_signal.emit('Finished! \nExcel file was exported to output folder: %s'%str(self.output_path))
+                part_path = self._write_particle_excel(path_part)
+                done_msg = 'Finished! \nExcel file was exported to output folder: %s'%str(self.output_path)
+                if part_path:
+                    done_msg += '\nAll-particle morphology: %s'%os.path.basename(part_path)
+                self.message_signal.emit(done_msg)
         else:
             num_total = direct_img_total
                     # print(num_total)
@@ -765,8 +831,10 @@ class idenCNN(QThread):
                         preds_all = []
                         if self.mm_yesno:
                             meas_all = []
+                            src_all = []
+                            roi_all = []
                         vol = 0
-                        imgdir = data_path.split('/')[-1]
+                        imgdir = os.path.basename(data_path.rstrip('/\\'))
                         print('path = ', imgdir)
                         self.progress_signal.emit([len(os.listdir(data_path))-1, None, None, num_processed])
                         if self.device_type == 2 or self.image_type == 1:
@@ -785,6 +853,8 @@ class idenCNN(QThread):
                                     # model_cnn.eval()
                                     preds = []
                                     meas = []
+                                    srcs = []
+                                    rois = []
                                     for j, imgdata in enumerate(test_loader,0):
                                         imgs_tensor, labels = imgdata
                                         # plot(imgs[0])
@@ -816,6 +886,8 @@ class idenCNN(QThread):
                                                 else:
                                                     mea = [np.nan]*self.mms.count(1)
                                                     meas.append(mea)
+                                                srcs.append(os.path.basename(fls[k]))
+                                                rois.append(k)
 
                                         except Exception as e:
                                             print("Error with image measurement or write:%s"%str(e))
@@ -825,6 +897,8 @@ class idenCNN(QThread):
                                 if self.mm_yesno:
                                     # print(len(meas))
                                     meas_all += meas
+                                    src_all += srcs
+                                    roi_all += rois
                                 self.data_signal.emit([preds_all, imgdir])
 
                             except Exception as e:
@@ -866,6 +940,8 @@ class idenCNN(QThread):
                                                 # model_cnn.eval()
                                                 preds = []
                                                 meas = []
+                                                srcs = []
+                                                rois = []
                                                 for _, imgdata in enumerate(test_loader,0):
                                                     imgs_tensor, labels = imgdata
                                                     # plot(imgs[0])
@@ -897,6 +973,8 @@ class idenCNN(QThread):
                                                                 # print(mea)
                                                                 meas.append(mea)
                                                                 # print('%d:%d'%(i,pred_name))
+                                                            srcs.append(fl)
+                                                            rois.append(k)
                                                         # self._signal.emit([preds, meas, None])
                                                         
                                                     except Exception as e:
@@ -908,6 +986,8 @@ class idenCNN(QThread):
             #                                     # print(len(preds_all))
                                             if self.mm_yesno:
                                                 meas_all += meas
+                                                src_all += srcs
+                                                roi_all += rois
                                                 print(len(preds),len(meas))
             #                                         # print(len(meas))
                                             self.data_signal.emit([preds_all, imgdir])
@@ -924,6 +1004,7 @@ class idenCNN(QThread):
                             df_meas.replace([np.inf, -np.inf], np.nan, inplace=True)
                             print("length of morphology measures: %d"%len(df_meas))
                             df_meas['Prediction'] = preds_all
+                            self._queue_particle_sheet(imgdir, df_meas, src_all, roi_all, classes)
                             df = pd.DataFrame(columns = mm_nms+['Prediction'])
                             for n in range(args.features):
                                 df_i = df_meas[df_meas["Prediction"] == n].mean()
@@ -978,7 +1059,11 @@ class idenCNN(QThread):
             # time.sleep(1)
             self.progress_signal.emit([None,len(os.listdir(self.imgs_path))-1,None, num_processed])
             print('Finished!')
-            self.message_signal.emit('Finished! \nExcel file was exported to output folder: %s'%str(self.export_path))
+            part_path = self._write_particle_excel(path_part)
+            done_msg = 'Finished! \nExcel file was exported to output folder: %s'%str(self.output_path)
+            if part_path:
+                done_msg += '\nAll-particle morphology: %s'%os.path.basename(part_path)
+            self.message_signal.emit(done_msg)
     
 #%%
 # -----------------ready the dataset--------------------------
@@ -1051,6 +1136,7 @@ class Ui_sorta(QMainWindow):
         
         self.level = 1
         self.mm_yesno = False
+        self.export_particles = False
         self.Image_Size = 224
         
         self.loaded_class_path = ""
@@ -1114,7 +1200,7 @@ class Ui_sorta(QMainWindow):
         self.label = QLabel(self.frame_top)
         self.label.setMaximumSize(QSize(280, 100))
         # self.label.setText("brigchen@xmu.edu.cn")
-        _logo = _icon('Sorta_logo2.png')
+        _logo = _icon('ALGAVISION.png')
         if _logo:
             self.label.setPixmap(QPixmap(_logo))
         self.label.setScaledContents(True)
@@ -1476,6 +1562,15 @@ class Ui_sorta(QMainWindow):
         self.verticalLayout_43.addWidget(self.checkbox_10)
         self.verticalLayout_43.addWidget(self.checkbox_11)
 
+        self.checkbox_export_particles = QtWidgets.QCheckBox(self.groupBox_morph)
+        self.checkbox_export_particles.setText("Export all particles")
+        self.checkbox_export_particles.setToolTip(
+            "Write one Excel row per particle (source, class, morphology).\n"
+            "The class-summary Excel is still written.")
+        self.checkbox_export_particles.setEnabled(False)
+        self.checkbox_export_particles.stateChanged.connect(self.on_export_particles)
+        self.verticalLayout_mm1.addWidget(self.checkbox_export_particles)
+
        
         self.groupBox_morph2 = QGroupBox(self.frame_down_mid)    #
         self.verticalLayout_morph.addWidget(self.groupBox_morph2)
@@ -1569,7 +1664,7 @@ class Ui_sorta(QMainWindow):
         self.verticalLayout_plot.addWidget(self.label_plot)
         
         self.figure = Figure_Bar(8, 6, dpi=100)
-        _bg = _icon('Sorta_logo2.png')
+        _bg = _icon('ALGAVISION.png')
         try:
             _img_path = _bg if _bg else str(_RES_DIR / 'Modelr_logo2.png')
             img = Image.open(_img_path)
@@ -1789,6 +1884,10 @@ class Ui_sorta(QMainWindow):
                     self.radioButton_mmno.setChecked(True)
                 else:
                     self.radioButton_mmyes.setChecked(True)
+
+                if config.has_option('Settings', 'export_particles'):
+                    self.export_particles = bool(eval(config.get('Settings', 'export_particles')))
+                    self.checkbox_export_particles.setChecked(self.export_particles)
                     
                 # export_yesno
                 if self.export_yesno == 0:
@@ -1821,6 +1920,7 @@ class Ui_sorta(QMainWindow):
                 'image_type': self.image_type,
                 'level': self.level,
                 'mm_yesno': self.mm_yesno,
+                'export_particles': self.export_particles,
                 'pxsize': self.pxsize,
                 'export_yesno': self.export_yesno,
                 'mms': self.mms,
@@ -1961,19 +2061,31 @@ class Ui_sorta(QMainWindow):
         self.formula_path = self.formula_paths[idx]    
 
     def on_mm_yesno(self,code = 0):
-        # self.mm_yesno = code
+        sender = self.sender()
+        try:
+            if sender is not None and hasattr(sender, "isChecked") and not sender.isChecked():
+                return
+        except Exception:
+            pass
         if code == 0:
             self.mm_yesno = True
             self.groupBox_36.setEnabled(True)
             self.groupBox_42.setEnabled(True)
             self.groupBox_43.setEnabled(True)
+            self.checkbox_export_particles.setEnabled(True)
             self.label_status.setText("Set Morphology Measurement = %s"%str(self.mm_yesno))
         else:
             self.mm_yesno = False
             self.groupBox_36.setEnabled(False)
             self.groupBox_42.setEnabled(False)
             self.groupBox_43.setEnabled(False)
-            self.label_status.setText("Set Morphology Measurement = %s"%str(self.mm_yesno))  
+            self.checkbox_export_particles.setEnabled(False)
+            self.label_status.setText("Set Morphology Measurement = %s"%str(self.mm_yesno))
+
+    def on_export_particles(self):
+        self.export_particles = self.checkbox_export_particles.isChecked()
+        self.label_status.setText(
+            "Export all-particle morphology = %s" % str(self.export_particles))
 
     def size_changed(self):
         try:
@@ -2193,6 +2305,7 @@ class Ui_sorta(QMainWindow):
                                mm = self.mm_yesno,
                                mms = self.mms,
                                mm_select = self.mm_select,
+                               export_particles = self.export_particles and self.mm_yesno,
                                pxsize = self.pxsize,
                                device_type = self.device_type,
                                level = self.level,
@@ -2327,7 +2440,7 @@ if __name__ =='__main__':
     # QApplication.setAttribute(Qt.AA_EnableHighDpiScaling) 
     app = QApplication(sys.argv) 
     gui = Ui_sorta()
-    _ico = _icon('Sorta_icon.png')
+    _ico = _icon('sorta_mid.ico')
     if _ico:
         gui.setWindowIcon(QIcon(_ico))
     gui.showMaximized()

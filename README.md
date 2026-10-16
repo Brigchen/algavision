@@ -1,5 +1,7 @@
 # ALGAVISION
 
+**SORTA version 2.1.0**
+
 A PyQt5 / Tkinter desktop suite for plankton image processing, automated identification, and active-learning-based model training. Developed at Xiamen University.
 
 ---
@@ -8,7 +10,7 @@ A PyQt5 / Tkinter desktop suite for plankton image processing, automated identif
 
 | Tool | Entry point | Description |
 |---|---|---|
-| **SORTA** | `run_sorta.py` | CNN-based plankton identification, morphometry, Excel export |
+| **SORTA** | `run_sorta.py` | CNN-based plankton identification, morphometry, class-summary Excel plus optional per-particle morphology Excel |
 | **SEGMAN** | `run_segman.py` | Segment individual organisms from FlowCAM / microscope images |
 | **TAGOR** | `run_tagor.py` | Manual image tagging and class-folder organization |
 | **MODLER v2** | `run_modler.py` | Model training with active learning, unsupervised annotation, style transfer |
