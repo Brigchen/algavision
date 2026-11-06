@@ -1,6 +1,6 @@
 # ALGAVISION
 
-**SORTA version 2.1.0**
+**SORTA version 2.1.2** (2026-11-06)
 
 A PyQt5 / Tkinter desktop suite for plankton image processing, automated identification, and active-learning-based model training. Developed at Xiamen University.
 

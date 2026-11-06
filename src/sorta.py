@@ -1,4 +1,5 @@
 '''
+update: 20261106 version and update date are read from the project file
 update: 20261016 export per-particle morphology excel alongside class summary
 update: 20260111 support for efficientnetv2
 update: 20260107 flowcam cut error
@@ -12,6 +13,8 @@ next: cancel button to stop thread
 '''
 # -*- coding: utf-8 -*-
 from __future__ import print_function, division
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 from PyQt5.QtWidgets import *
 # from PyQt5.QtCore import QStringListModel,QAbstractListModel,QModelIndex
@@ -29,6 +32,21 @@ def _icon(name):
     """返回 resources/icons/ 下图标的绝对路径字符串，不存在时返回空字符串。"""
     p = _RES_DIR / name
     return str(p) if p.exists() else ''
+
+def _header_logo(path, height=92):
+    """按不透明区域裁切后等比缩放到标题栏，避免被拉扁。"""
+    import io
+    im = Image.open(path).convert('RGBA')
+    alpha = np.asarray(im)[:, :, 3]
+    ys, xs = np.where(alpha > 16)
+    if len(xs):
+        im = im.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+    im.thumbnail((height * 4, height), Image.LANCZOS)
+    buf = io.BytesIO()
+    im.save(buf, format='PNG')
+    pix = QPixmap()
+    pix.loadFromData(buf.getvalue())
+    return pix
 import time
 import argparse
 import torch
@@ -75,83 +93,54 @@ warnings.filterwarnings("ignore")
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 IMG_FORMATS = ["tif","TIF","tiff","TIFF","jpg","JPG","jpeg","JPEG","gif","GIF","png","PNG","bmp","BMP"]
-#%% 获取sorta的修改日期
+def _version_file():
+    return Path(__file__).resolve().parent.parent / 'version.txt'
+
+
+def _script_date():
+    stamp = os.path.getmtime(Path(__file__).resolve())
+    return time.strftime('%Y-%m-%d', time.localtime(stamp))
+
+
 def get_update_date():
-    # 获取当前脚本文件的路径
-    current_file_path = 'sorta.py'
-    
+    """返回 version.txt 里记录的更新日期。"""
     try:
-        # 获取文件的修改时间戳
-        modification_timestamp = os.path.getmtime(current_file_path)
-    
-        # 将时间戳转换为可读的日期和时间格式
-        modification_date = time.strftime('%Y-%m-%d', time.localtime(modification_timestamp))
-    
-        # 显示文件的修改日期
-        print(f"文件 {current_file_path} 的修改日期是: {modification_date}")
-        return modification_date
-    
-    except FileNotFoundError:
-        print(f"文件 {current_file_path} 未找到，请检查文件路径是否正确。")
-        return None
-    except NameError:
-        # 在某些环境中，如交互式解释器，__file__ 可能未定义
-        print("无法获取当前脚本文件的路径，请确保在脚本文件中运行此代码。")
-        return None
+        lines = _version_file().read_text(encoding='utf-8').splitlines()
+        if len(lines) >= 2 and lines[1].strip():
+            return lines[1].strip()
+    except OSError:
+        pass
+    try:
+        return _script_date()
+    except OSError:
+        return ''
 
 
-#%% autoupdate version
 def update_version():
-    """自动更新版本号（带Git检查）"""
+    """读取项目根目录的版本号。脚本日期新于记录日期时，补丁号加 1 并写回。"""
+    vf = _version_file()
     try:
-        # 读取当前版本号
-        try:
-            with open('version.txt', 'r') as f:
-                version = f.read().strip()
-                major, minor, patch = map(int, version.split('.'))
-        except FileNotFoundError:
-            major, minor, patch = 2, 0, 0
-        
-        # 检查是否是Git仓库
-        try:
-            # 检查 .git 目录是否存在
-            if not os.path.exists('.git'):
-                print('不是 Git 仓库，跳过版本更新')
-                return f'{major}.{minor}.{patch}'
-            
-            # 获取Git状态
-            git_status = subprocess.check_output(
-                ['git', 'status', '--porcelain'],
-                stderr=subprocess.DEVNULL
-            ).decode('utf-8').strip()
-            
-            if git_status:
-                # 如果有文件修改，更新版本号
-                patch += 1
-                if patch >= 10:
-                    patch = 0
-                    minor += 1
-                    if minor >= 10:
-                        minor = 0
-                        major += 1
-                new_version = f'{major}.{minor}.{patch}'
-                
-                # 保存新的版本号
-                with open('version.txt', 'w') as f:
-                    f.write(new_version)
-                print(f'版本号已更新为: {new_version}')
-                return new_version
-            else:
-                print('没有文件修改，版本号未更新。')
-                return f'{major}.{minor}.{patch}'
-                
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            print('Git 命令执行失败，跳过版本更新')
-            return f'{major}.{minor}.{patch}'
-            
+        lines = vf.read_text(encoding='utf-8').splitlines() if vf.exists() else []
+        major, minor, patch = 2, 1, 2
+        if lines and lines[0].strip():
+            major, minor, patch = map(int, lines[0].strip().split('.'))
+        saved = lines[1].strip() if len(lines) > 1 else ''
+        script_date = _script_date()
+        version = f'{major}.{minor}.{patch}'
+        if saved != script_date:
+            patch += 1
+            if patch >= 10:
+                patch = 0
+                minor += 1
+                if minor >= 10:
+                    minor = 0
+                    major += 1
+            version = f'{major}.{minor}.{patch}'
+            vf.write_text(version + '\n' + script_date + '\n', encoding='utf-8')
+        return version
     except Exception as e:
         print(f'更新版本号时出错: {e}')
-        return '2.0.0'
+        return '2.1.2'
 
 # update_version()
 
@@ -172,6 +161,28 @@ def get_mem():
     mem_total = psutil.virtual_memory().total/1024/1024/1024
     return mem_total
 
+
+def _load_efficientnet(model, state, n_classes):
+    """Load an EfficientNet checkpoint.
+
+    Older SORTA/MODLER runs kept the 1000-way ImageNet layer and trained the
+    first n_classes rows inside it. Those files must be loaded as-is.
+    A checkpoint whose head was actually resized is loaded into a matching layer.
+    """
+    weight = state.get('_fc.weight') if isinstance(state, dict) else None
+    if weight is None:
+        return "checkpoint.pt has no _fc.weight, so it is not an EfficientNet weight file."
+    n_ckpt = int(weight.shape[0])
+    n_classes = int(n_classes)
+    if n_ckpt == n_classes:
+        model._fc = torch.nn.Linear(model._fc.in_features, n_classes)
+    elif not (n_ckpt == 1000 and 0 < n_classes < 1000):
+        return (
+            "Stopped. checkpoint head has %d outputs, but classes_names.txt has %d."
+            % (n_ckpt, n_classes)
+        )
+    model.load_state_dict(state)
+    return None
 
 def get_batchsize(bsize1, gpu_mem1):
     if torch.cuda.is_available():
@@ -497,11 +508,12 @@ class idenCNN(QThread):
             model_cnn.load_state_dict(torch.load(model_path, map_location=device)) 
         else:
             model_cnn = EfficientNet.from_pretrained(args.model_type)#, dropout_rate = args.drop_out)
-            model_cnn._fc.out_features = args.features
-            if torch.cuda.is_available():
-                model_cnn.load_state_dict(torch.load(os.path.join(args.path_model , 'checkpoint.pt'), map_location='cuda:0'))
-            else:
-                model_cnn.load_state_dict(torch.load(os.path.join(args.path_model , 'checkpoint.pt'), map_location=torch.device('cpu')))
+            state = torch.load(os.path.join(args.path_model, 'checkpoint.pt'), map_location=device)
+            head_error = _load_efficientnet(model_cnn, state, args.features)
+            if head_error:
+                self.message_signal.emit(head_error)
+                print(head_error)
+                return
         model_cnn.to(device)
         model_cnn.eval()
         self.message_signal.emit("Processing....\n Model loaded, and starting test") 
@@ -785,6 +797,9 @@ class idenCNN(QThread):
                         # df.to_csv(os.path.join(args.path_out, "{imgdir}_{today}.csv"))
                             # dfs[imgdir_df]=df
                         # df['Class_Names']=cn_df['Class_Names']
+                        if not count or sum(count) == 0:
+                            self.message_signal.emit(
+                                "No particles were classified in %s, so this sheet stays 0." % imgdir)
                         df.insert(0, 'Class_Names', cn_df['Class_Names'])
                         try:
                             df.drop(['Prediction'], axis = 1, inplace = True)
@@ -1033,6 +1048,9 @@ class idenCNN(QThread):
                             else:
                                 nm = 'Counts(ind)'
                                 df = pd.DataFrame(count, columns=[nm])
+                        if not count or sum(count) == 0:
+                            self.message_signal.emit(
+                                "No particles were classified in %s, so this sheet stays 0." % imgdir)
                         df.insert(0, 'Class_Names', cn_df['Class_Names'])
                         try:
                             df.drop(['Prediction'], axis = 1, inplace = True)
@@ -1198,12 +1216,13 @@ class Ui_sorta(QMainWindow):
         self.horizontalLayout.setSpacing(20)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label = QLabel(self.frame_top)
-        self.label.setMaximumSize(QSize(280, 100))
-        # self.label.setText("brigchen@xmu.edu.cn")
+        self.label.setMaximumHeight(96)
         _logo = _icon('ALGAVISION.png')
         if _logo:
-            self.label.setPixmap(QPixmap(_logo))
-        self.label.setScaledContents(True)
+            pix = _header_logo(_logo, 92)
+            self.label.setPixmap(pix)
+            self.label.setFixedSize(pix.size())
+        self.label.setScaledContents(False)
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.label)
@@ -1824,7 +1843,10 @@ class Ui_sorta(QMainWindow):
             try:
                 config.read('sorta.cfg')
                 self.dataset_path = config.get('Settings', 'dataset_path')
-                if not check_path(self.dataset_path):
+                if not os.path.isdir(self.dataset_path):
+                    self.label_status.setText(u'上次的图像目录不存在，请重新选择: %s' % self.dataset_path)
+                    self.dataset_path = ''
+                elif not check_path(self.dataset_path):
                     self.label_status.setText(u'文件夹名或图像文件名中具有中文字符或特殊符号，请改成纯英文名称！')
                     self.dataset_path = ''
                 self.output_path = config.get('Settings', 'output_path')
@@ -1992,9 +2014,8 @@ class Ui_sorta(QMainWindow):
 
     def renew_dataset_folder(self):
         idx = self.comboBox_dataset.currentIndex()
-        print('1809, idx:', idx)
-        print(self.dataset_path)
-        print(self.dataset_paths)
+        if idx < 0 or idx >= len(self.dataset_paths):
+            return
         self.dataset_path = self.dataset_paths[idx]
         self.label_status.setText("Image path: %s"%self.dataset_path)   
 
